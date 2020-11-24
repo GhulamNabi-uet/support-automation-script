@@ -1,6 +1,6 @@
 # <-- DataBase And Slack Connectivity  --> #
 
-uri = "mongodb://ghulam-nabi:bIplbWdSe7QnDCPsf49dqF7Ggovam4@algomus-prod-shard-00-00-yjdp2.mongodb.net:27017,algomus-prod-shard-00-01-yjdp2.mongodb.net:27017,algomus-prod-shard-00-02-yjdp2.mongodb.net:27017/algomus_prod?authSource=admin&replicaSet=Algomus-PROD-shard-0&retryWrites=true&ssl=true"
+uri = "mongodb://@algomus-prod-shard-00-00-yjdp2.mongodb.net:27017,algomus-prod-shard-00-01-yjdp2.mongodb.net:27017,algomus-prod-shard-00-02-yjdp2.mongodb.net:27017/algomus_prod?authSource=admin&replicaSet=Algomus-PROD-shard-0&retryWrites=true&ssl=true"
 
 #<-- Algo workspace Support_automate channel --> #
 
