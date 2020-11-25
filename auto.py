@@ -67,8 +67,7 @@ def get_filename(rec):
     return file_name
 
 
-# <-- Function For Checking the Processing And  GE Core Copute Status Pipeline .{ Coded By : Anup A. Ingale  and
-# Adinath Gore } --> #
+# <-- Function For Checking the Processing And  GE Core Compute Status Pipeline .
 
 def check_processing_pipeline_status():
     try:
@@ -92,7 +91,8 @@ def check_processing_pipeline_status():
             else:
                 processing_pipeline[origin][current_stage] = processing_pipeline[origin][current_stage] + 1 if \
                     processing_pipeline[origin].get(current_stage) else 1
-            id = str(rec["_id"])
+            object_id = str(rec["_id"])
+            batch_id = str(rec["batchId"])
             start_time = rec['created']['date']
             stage = rec['stage'].split('.')
             stage = "{}.{}".format(stage[0], stage[1].split(':')[0])
@@ -100,18 +100,18 @@ def check_processing_pipeline_status():
             hours_taken = (time_taken.total_seconds() / 60) / 60
             file_name = get_filename(rec)
             if file_name:
-                if hours_taken > 1.0:
+                if hours_taken > 0.68:
                     h = int(time_taken.total_seconds())
                     m, s = divmod(h, 60)
                     h, m = divmod(m, 60)
                     hours_taken = ("%d:%02d:%02d" % (h, m, s))
-                    time_taken_pipeline[origin, file_name, id] = hours_taken
+                    time_taken_pipeline[origin, file_name, object_id] = hours_taken
                 if (file_name in core_compute_list) or (file_name in filenames):
                     f_name = file_name.split('DEPENDENCY_')
                     if len(f_name) > 1:
-                        core_compute[f_name[1]] = [id, rec['status'], stage]
+                        core_compute[f_name[1]] = [object_id, rec['status'], stage]
                     else:
-                        core_compute[f_name[0]] = [id, rec['status'], stage]
+                        core_compute[f_name[0]] = [object_id, rec['status'], stage]
             else:
                 print("file name not found for Processing Pipeline", str(rec["_id"]))
         print("Process Queue:\n")
@@ -174,7 +174,8 @@ def check_failed_pipeline_status():
                 if file_name:
                     stage = r["stage"].replace("redshift", '').replace("error", '').replace(":", '').replace("transform.",
                                                                                                              "transform")
-                    id = str(r["_id"])
+                    object_id = str(r["_id"])
+                    batch_id = str(r["batchId"])
                     meta_query = {"processQueueId": ObjectId(r["_id"])}
                     error_details = meta_collection.find(meta_query).sort("date")
                     for e in error_details:
@@ -185,7 +186,7 @@ def check_failed_pipeline_status():
                         date = str(e["date"])
                     message = str("Reject: S3 validation failed. Error - NotFound: null")
                     if str(error) == message:
-                        id = str(r["_id"])
+                        object_id = str(r["_id"])
                         request_amazon_id = r['receive']['event']['Records'][0]['responseElements']['x-amz-request-id']
                         double_post = collection.find(
                             {"receive.event.Records.0.responseElements.x-amz-request-id": request_amazon_id})
@@ -195,24 +196,27 @@ def check_failed_pipeline_status():
                         if 'complete' in list_check and 'error' in list_check:
                             double_post_message = '( Confirm Double Lambda Post )'
                             double_post_list[id] = r['created']['date']
-                            failed_pipelines = failed_pipelines + "{} - {} - Failed on - {} - {} - {} - {}\n".format(origin,
+                            failed_pipelines = failed_pipelines + "{} - {} - Failed on - {} - {} - {} - {} - {}\n".format(origin,
                                                                                                                      file_name,
                                                                                                                      stage,
                                                                                                                      str(
                                                                                                                          error),
-                                                                                                                     id,
+                                                                                                                     object_id,
+                                                                                                                     batch_id,
                                                                                                                      double_post_message)
                         elif 'error' in list_check:
-                            failed_pipelines = failed_pipelines + "{} - {} - Failed on - {} - {} - {}\n".format(origin,
+                            failed_pipelines = failed_pipelines + "{} - {} - Failed on - {} - {} - {} - {}\n".format(origin,
                                                                                                                 file_name,
                                                                                                                 stage,
                                                                                                                 str(error),
-                                                                                                                id)
+                                                                                                                object_id,
+                                                                                                                batch_id)
                     elif str(error) != message:
-                        failed_pipelines = failed_pipelines + "{} - {} - Failed on - {} - {} - {}\n".format(origin,
+                        failed_pipelines = failed_pipelines + "{} - {} - Failed on - {} - {} - {} - {}\n".format(origin,
                                                                                                             file_name,
                                                                                                             stage,
-                                                                                                            str(error), id)
+                                                                                                            str(error), object_id,
+                                                                                                            batch_id)
                 else:
                     print("Unable to find file Name for failed pipeline ", str(r["_id"]))
         if failed_pipelines == "":
@@ -252,8 +256,8 @@ def message_sender(pq):
 # schedule.every(10).seconds.do(functools.partial(message_sender, False))
 check_processing_pipeline_status()
 check_failed_pipeline_status()
-schedule.every(20).seconds.do(check_processing_pipeline_status)
-schedule.every(22).seconds.do(check_failed_pipeline_status)
+schedule.every(300).seconds.do(check_processing_pipeline_status)
+schedule.every(302).seconds.do(check_failed_pipeline_status)
 
 while True:
     schedule.run_pending()
