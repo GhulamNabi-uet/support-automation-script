@@ -1,10 +1,10 @@
 # <-- DataBase And Slack Connectivity  --> #
 
-uri = "mongodb://username:password@algomus-prod-shard-00-00-yjdp2.mongodb.net:27017,algomus-prod-shard-00-01-yjdp2.mongodb.net:27017,algomus-prod-shard-00-02-yjdp2.mongodb.net:27017/algomus_prod?authSource=admin&replicaSet=Algomus-PROD-shard-0&retryWrites=true&ssl=true"
+uri = "mongodb://ghulam-nabi:bIplbWdSe7QnDCPsf49dqF7Ggovam4@algomus-prod-shard-00-00-yjdp2.mongodb.net:27017,algomus-prod-shard-00-01-yjdp2.mongodb.net:27017,algomus-prod-shard-00-02-yjdp2.mongodb.net:27017/algomus_prod?authSource=admin&replicaSet=Algomus-PROD-shard-0&retryWrites=true&ssl=true"
 
 #<-- Algo workspace Support_automate channel --> #
 
-webhook_url='https://hooks.slack.com/services/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'
+webhook_url='https://hooks.slack.com/services/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'
 
 
 
