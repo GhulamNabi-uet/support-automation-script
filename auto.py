@@ -253,8 +253,8 @@ def message_sender(pq):
 
 # <-- Schedule to set runing the Script Fuction at certain Intervals -->#
 
-schedule.every(1800).seconds.do(functools.partial(message_sender, True))
-schedule.every(1805).seconds.do(functools.partial(message_sender, False))
+schedule.every(30).minutes.do(functools.partial(message_sender, True))
+schedule.every(31).minutes.do(functools.partial(message_sender, False))
 check_processing_pipeline_status()
 check_failed_pipeline_status()
 schedule.every(300).seconds.do(check_processing_pipeline_status)

@@ -4,7 +4,7 @@ uri = "mongodb://username:password@algomus-prod-shard-00-00-yjdp2.mongodb.net:27
 
 #<-- Algo workspace Support_automate channel --> #
 
-webhook_url='https://hooks.slack.com/services/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'
+webhook_url='https://hooks.slack.com/services/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'
 
 
 
