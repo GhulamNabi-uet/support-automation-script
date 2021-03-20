@@ -6,3 +6,4 @@ To use the automation script clone the repository and do the following steps
 3. Install the requirments using this command -->> pip install -r requirements.txt (if you get error i.e (error: invalid command 'bdist_wheel') do "pip install        wheel" and again run command -->> pip install -r requirements.txt
 4. Update cofig.py file with your mongoDB credentials at 'uri' line. 
 5. Now you can run the automation script using this command -->> python auto.py 
+# support-automation-script
