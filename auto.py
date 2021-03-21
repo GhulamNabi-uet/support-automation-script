@@ -3,18 +3,17 @@ import json
 import time
 import traceback
 from datetime import datetime, timedelta
-​
 import requests
 import schedule
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 from pytz import timezone
 from tzlocal import get_localzone
-​
+
 from config import uri, webhook_url
-​
+
 # <-- Date Time Format Handle --> #
-​
+
 format = "%H:%M:%S %Z%z"
 now_utc = datetime.now(timezone('EST'))
 now_local = now_utc.astimezone(get_localzone())
@@ -23,9 +22,9 @@ yest, tomm = today - timedelta(days=1), today + timedelta(days=1)
 ordered_stages = ['brainapi.receive', 'file.receive', 'algo.config', 'file.config', 'file.migrate', 'file.copy',
                   'data.extract', 'file.decrypt', 'file.transform', 'file.client', 'file.load', 'data.transform',
                   'pipeline.file', 'pipeline.algo', 'pipeline.dependency', 'report.file']
-​
+
 # <-- Filter to sort the Things as per Need from the Mongodb -->#
-​
+
 processing_pipeline_query = {
     "$and": [{"created.date": {"$gte": yest}}, {"created.date": {"$lt": tomm}}, {"$or": [{"status": "processing"}]}]}
 failed_pipeline_query = {
@@ -54,8 +53,8 @@ try:
     meta_collection = db['ProcessQueueMeta']
 except Exception as e:
     print(e)
-​
-​
+
+
 def get_filename(rec):
     if rec.get('configuration'):
         file_name = rec.get('configuration').get('fileName')
@@ -66,10 +65,10 @@ def get_filename(rec):
     else:
         file_name = None
     return file_name
-​
-​
+
+
 # <-- Function For Checking the Processing And  GE Core Compute Status Pipeline .
-​
+
 def check_processing_pipeline_status():
     try:
         global current_stage
@@ -139,7 +138,7 @@ def check_processing_pipeline_status():
         else:
             process_queue_msg = "Processing : 0"
         print(process_queue_msg)
-​
+
         print("\nGE Core Compute Status:\n")
         if len(core_compute) > 0:
             for key, value in core_compute.items():
@@ -149,7 +148,7 @@ def check_processing_pipeline_status():
         else:
             core_compute_msg = "None\n"
         print(core_compute_msg)
-​
+
         if len(time_taken_pipeline) > 0:
             print('\nUnusual Long running Pipelines :\n')
             for q, interval_time in time_taken_pipeline.items():
@@ -165,10 +164,10 @@ def check_processing_pipeline_status():
         return msgs
     except Exception as exc:
         print(traceback.print_exc())
-​
-​
+
+
 # <-- Function For Checking the Failed Status Pipeline {Coded By : Anup A .Ingale } --> #
-​
+
 def check_failed_pipeline_status():
     try:
         global double_post_message, error
@@ -245,10 +244,10 @@ def check_failed_pipeline_status():
         return failed_pipelines
     except Exception as e:
         traceback.print_exc()
-​
-​
+
+
 # <-- Function to send the response to slack Coded by { Adinath Gore and Anup Ingale } --> #
-​
+
 def message_sender(pq):
     try:
         if pq:
@@ -267,17 +266,17 @@ def message_sender(pq):
         #     print("message sending failed with error code: ", is_sent.status_code)
     except Exception as e:
         print(traceback.print_exc())
-​
-​
+
+
 # <-- Schedule to set runing the Script Fuction at certain Intervals -->#
-​
+
 schedule.every(30).minutes.do(functools.partial(message_sender, True))
 schedule.every(31).minutes.do(functools.partial(message_sender, False))
 check_processing_pipeline_status()
 check_failed_pipeline_status()
 schedule.every(120).seconds.do(check_processing_pipeline_status)
 schedule.every(120).seconds.do(check_failed_pipeline_status)
-​
+
 while True:
     schedule.run_pending()
     time.sleep(1)
