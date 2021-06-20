@@ -3,6 +3,7 @@ import json
 import time
 import traceback
 from datetime import datetime, timedelta
+
 import requests
 import schedule
 from bson.objectid import ObjectId
@@ -30,8 +31,8 @@ processing_pipeline_query = {
 failed_pipeline_query = {
     "$and": [{"created.date": {"$gte": yest}}, {"created.date": {"$lt": tomm}}, {"$or": [{"status": "error"}]}]}
 clients = sorted(
-    ["algo", "algomus", "aec", "catad", "crosby", "dadc", "default", "dis", "excell", "fox", "goldeneye", "joint-venture" ,"jv", "penske", "sphe",
-     "uphe", "wbe", "whv-eu", "whveu", "diseu", "dis-eu", "target"], reverse=True)
+    ["algo", "algomus", "aec", "catad", "crosby", "dadc", "default", "dis", "excell", "fox", "goldeneye", "joint-venture", "jointventure" ,"jv", "penske", "sphe",
+     "uphe", "wbe", "whv-eu", "whveu", "diseu", "dis-eu","target", "algo-target", "algo-microsoft", "microsoft"], reverse=True)
 filenames = sorted(
     ["GOLDENEYE_BATCH1_CORE_COMPUTE", "GOLDENEYE_UPHE_PA042_CORE_COMPUTE", "GOLDENEYE_UPHE_PA048_CORE_COMPUTE", "GOLDENEYE_UPHE_PA045_CORE_COMPUTE",
      "GOLDENEYE_DIS_PA061_CORE_COMPUTE",
@@ -42,7 +43,7 @@ filenames = sorted(
      "GOLDENEYE_DIS_PA060_CORE_COMPUTE", "GOLDENEYE_SPHE_PA014_CORE_COMPUTE", "GOLDENEYE_SPHE_PA015_CORE_COMPUTE",
      "GOLDENEYE_JV_PA031_CORE_COMPUTE",
      "GOLDENEYE_SPHE_PA016_CORE_COMPUTE", "GOLDENEYE_UPHE_PA043_CORE_COMPUTE", "GOLDENEYE_DIS_PA063_CORE_COMPUTE",
-     "GOLDENEYE_BATCH4_CORE_COMPUTE"], reverse=True)
+     "GOLDENEYE_BATCH4_CORE_COMPUTE", 'GOLDENEYE_JV_PA034_PA035_PA036_PA038_CORE_COMPUTE'], reverse=True)
 core_compute_list = []
 for f in filenames:
     batch = 'DEPENDENCY_' + f
@@ -79,17 +80,14 @@ def check_processing_pipeline_status():
             origin = [client.upper() for client in clients if (client in rec["origin"].lower())][0]
             if origin == 'GOLDENEYE':
                 origin = 'GE'
-            if origin == "ALGO":
+            if origin == 'ALGO-MICROSOFT' or origin == "MICROSOFT":
+                origin = 'MICROSOFT'
+            if origin == "ALGO-TARGET" or origin == "TARGET":
                 origin = 'TARGET'
             if origin == 'DIS':
                 origin = 'FOX'
-            if origin == "JOINT-VENTURE":
+            if origin == "JOINT-VENTURE" or origin == "JOINTVENTURE":
                 origin = "SDS"
-            if origin == 'DIS-EU':
-                if origin.find('PA068'):
-                    origin = 'DIS-EU'
-                if origin.find('PA069'):
-                    origin == 'DIS-GSA'
             
             current_stage = rec['stage'].split('.')
             if current_stage[0] in clients and rec['stage'] != 'algo.config':
@@ -182,11 +180,13 @@ def check_failed_pipeline_status():
                 origin = [client.upper() for client in clients if (client in r["origin"].lower())][0]
                 if origin == 'GOLDENEYE':
                     origin = 'GE'
-                if origin == "ALGO":
+                if origin == 'ALGO-MICROSOFT' or origin == "MICROSOFT":
+                    origin = 'MICROSOFT'
+                if origin == "ALGO-TARGET" or origin == "TARGET":
                     origin = 'TARGET'
                 if origin == 'DIS':
                     origin = 'FOX'
-                if origin == "JOINT-VENTURE":
+                if origin == "JOINT-VENTURE"  or origin == "JOINTVENTURE":
                     origin = "SDS"
                 file_name = get_filename(r)
                 if file_name:
@@ -275,7 +275,7 @@ schedule.every(31).minutes.do(functools.partial(message_sender, False))
 check_processing_pipeline_status()
 check_failed_pipeline_status()
 schedule.every(120).seconds.do(check_processing_pipeline_status)
-schedule.every(120).seconds.do(check_failed_pipeline_status)
+schedule.every(122).seconds.do(check_failed_pipeline_status)
 
 while True:
     schedule.run_pending()
